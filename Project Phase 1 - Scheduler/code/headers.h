@@ -60,3 +60,17 @@ void destroyClk(bool terminateAll)
         killpg(getpgrp(), SIGINT);
     }
 }
+
+enum Scheduling_Algorithms
+{
+    //1. First Come First Serve (FCFS)
+    FCFS = 1,
+    // 2. Shortest Job First (SJF)
+    SJF,
+    // 3. Preemptive Highest Priority First (HPF)
+    HPF,
+    // 4. Shortest Remaining Time Next (SRTN)
+    SRTN,
+    // 5. Round Robin (RR)
+    RR
+}Scheduling_Algorithms;
