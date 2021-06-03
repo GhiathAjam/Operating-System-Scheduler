@@ -4,13 +4,13 @@ void clearResources(int);
 void initResources();
 struct linked_list *readInputFile(char *);
 int scheduler_msgq = -1;
-
+struct linked_list *processes=NULL;
 
 int main(int argc, char *argv[])
 {
     signal(SIGINT, clearResources);
     // 1. Read the input files.
-    struct linked_list *processes = readInputFile(argv[1]);
+    processes = readInputFile(argv[1]);
 
     //debug
     struct node *pp = processes->head;
@@ -59,14 +59,14 @@ int main(int argc, char *argv[])
             //wait
         }
         curr_time++;
-        printf("Proc gen, Time: %d\n", curr_time);
+        //printf("Proc gen, Time: %d\n", curr_time);
 
         //TODO: implement this: (Sending of "arrived" procs)
     while (next_process && ((process *)next_process->data)->arrival_time == curr_time)
     {
         
         msgsnd(scheduler_msgq, ((process *)next_process->data), sizeof(process), !IPC_NOWAIT);
-        printf("Proc gen, process with ID: %d has just arrived. \n\n ", ((process *)next_process->data)->pid);
+        //printf("Proc gen, process with ID: %d has just arrived. \n\n ", ((process *)next_process->data)->pid);
         next_process = next_process->next;
     }
         /*
@@ -82,9 +82,14 @@ int main(int argc, char *argv[])
 
 void clearResources(int signum)
 {
+    
+    free_linked_list(processes);
     //TODO Clears all resources in case of interruption
-    if (scheduler_msgq == -1) //not iniitaized yet
-        msgctl(scheduler_msgq, IPC_RMID, NULL);
+    if (scheduler_msgq != -1) // iniitaized 
+    {
+        printf("Proc,Gen: Deleting Message Queue\n");
+        msgctl(scheduler_msgq, IPC_RMID, (struct msqid_ds *)0);
+    }
     //cascade the signal to group
     killpg(getpgrp(), signum);
 

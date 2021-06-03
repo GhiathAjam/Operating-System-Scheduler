@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
 
         //TODO: recieve arrived procs , and make a new PCB for it
         new_processes = new_linked_list(); //clear old arrivals
+        printf("Scheduler, Time: %d\n", curr_time);
         recieve_new_processes(new_processes);
 
  
@@ -49,7 +50,8 @@ int main(int argc, char *argv[])
         //              or continue running curr proc
         //              or schedule next proc if
 
-        printf("SCHEDULER RUNNING: time is: %d, Running proc: %d\n", curr_time, curr_proc);
+       // printf("SCHEDULER RUNNING: time is: %d, Running proc: %d\n", curr_time, curr_proc);
+        free_linked_list(new_processes); //remove all processes ( They should be added to queue or something before this line)
     }
 
     //TODO: 5.Report METRICS
@@ -60,7 +62,11 @@ int main(int argc, char *argv[])
 void clearResources(int signum)
 {
     //TODO Clears all resources in case of interruption
-
+    if (!arrival_processes_msgq == -1) // iniitaized 
+    {
+        printf("Deleting Message Queue\n");
+        msgctl(arrival_processes_msgq, IPC_RMID, (struct msqid_ds *)0);
+    }
     //cascade the signal to group
     killpg(getpgrp(), signum);
 
