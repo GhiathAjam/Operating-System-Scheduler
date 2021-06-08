@@ -27,7 +27,6 @@ int main(int argc, char *argv[])
 
     while (1)
     {
-
         while (curr_time == getClk())
         {
             //wait
@@ -35,8 +34,8 @@ int main(int argc, char *argv[])
         curr_time++;
 
         //TODO: recieve arrived procs , and make a new PCB for it
-
         //if no more procs -> exit
+
         if (((process *)(new_processes->head))->pid == -1)
             break;
 

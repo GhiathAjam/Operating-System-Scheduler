@@ -62,6 +62,11 @@ int main(int argc, char *argv[])
         //printf("Proc gen, Time: %d\n", curr_time);
 
         //DONE: implement this: (Sending of "arrived" procs)
+
+        //tell scheduler to receive
+        if (next_process && ((process *)next_process->data)->arrival_time == curr_time)
+            kill(scheduler_pid, SIGALRM);
+
         while (next_process && ((process *)next_process->data)->arrival_time == curr_time)
         {
 
@@ -81,6 +86,9 @@ int main(int argc, char *argv[])
         int priority;
     };
 */
+
+    //tell scheduler to receive
+    kill(scheduler_pid, SIGALRM);
 
     // Sending empty proc to indicate no more procs are there
     ((process *)next_process->data)->pid = -1;
