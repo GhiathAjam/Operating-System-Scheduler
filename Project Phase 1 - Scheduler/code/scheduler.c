@@ -1,9 +1,25 @@
 #include "headers.h"
 #include "process_model.h"
+#include "PCB.h"
 void clearResources(int);
 void initResources();
 void recieve_new_processes();
-struct linked_list *new_processes;
+
+struct PCB *create_new_process(process *); //create  a new process and return it's pcb
+
+void finished_process(struct PCB * pcb); //removes it from ready and add it to finished
+void run_process(int pid);
+void pause_process(int pid);
+void generate_output();
+
+struct linked_list *new_processes;     //list of processes
+struct linked_list *ready_processes;   //list of pcbs
+struct linked_list *finised_processes; //list of pcbs
+                                       //TODO : use this to create output file
+
+struct linked_list *add_processes; //list of pcbs of processes that was added in the current time step
+                                   //preemptive algorithms will need it
+
 int arrival_processes_msgq = -1;
 
 int main(int argc, char *argv[])
@@ -11,20 +27,21 @@ int main(int argc, char *argv[])
     signal(SIGINT, clearResources);
     signal(SIGALRM, recieve_new_processes);
 
-    // puts(argv[0]);
-
     enum Scheduling_Algorithms algo_num = atoi(argv[0]);
     int quanta = atoi(argv[1]);
     printf("Scheduler started, algo: %d, quanta: %d\n", algo_num, quanta);
 
     initClk();
     initResources();
+
     //TODO: implement the scheduler.
     //TODO: upon termination release the clock resources.
-    int curr_proc = 0;
+    struct PCB *curr_proc = NULL;
     int curr_time = -1;
+    new_processes=new_linked_list();     //list of processes
+ready_processes=new_linked_list();   //list of pcbs
+finised_processes=new_linked_list(); //list of pcbs
     printf("Scheduler : All Resources Initialized \n");
-
     while (1)
     {
         while (curr_time == getClk())
@@ -32,38 +49,52 @@ int main(int argc, char *argv[])
             //wait
         }
         curr_time++;
-
-        //TODO: recieve arrived procs , and make a new PCB for it
-        //if no more procs -> exit
-
-        if (((process *)(new_processes->head))->pid == -1)
-            break;
-
-        //else: new procs are added, do we really care?
-
         printf("Scheduler, Time: %d\n", curr_time);
 
         // A PCB should keep track of the state of a process; running/waiting,
         // execution time, remaining time, waiting time, etc.
+        struct node *p;
+        linked_list_pop_front(new_processes, &p);
+        if ( p && ((process *)p->data)->pid == -1)
+          break;
 
-        //TODO: 1.Start a new process whenever it arrives. (Fork it and give it its parameters)
+        while (p)
+        {
+            //if no more procs -> exit
+            struct PCB *pcb = create_new_process((process *)p->data);
+            linked_list_push_front(add_processes, new_node(pcb));
+            linked_list_push_front(ready_processes, new_node(pcb));
 
-        //TODO: check if " curr proc finished " --> check by remaining time --> del its PCB , and send INT to it
+            linked_list_pop_front(new_processes, &p);
+        }
+
+        //else: new procs are added, do we really care?
+
+        //TODO: check if " curr proc finished " --> check by remaining time --> del its PCB
 
         //TODO: Decide if: interrupt currnt proc and start another WHILE SAVING STATE
         //              or continue running curr proc
         //              or schedule next proc if
-
-        // printf("SCHEDULER RUNNING: time is: %d, Running proc: %d\n", curr_time, curr_proc);
-        free_linked_list(new_processes); //remove all processes ( They should be added to queue or something before this line)
+        switch (algo_num)
+        {
+        case FCFS:
+            break;
+        case SJF:
+            break;
+        case HPF:
+            break;
+        case SRTN:
+            break;
+        case RR:
+            break;
+        }
     }
 
-    //TODO: 5.Report METRICS
+    generate_output();
 
+    // after this is terminated -> proc gen will terminate everything
     destroyClk(true);
 
-    clearResources
-    // after this is terminated -> proc gen will terminate everything
 }
 
 void clearResources(int signum)
@@ -100,3 +131,32 @@ void recieve_new_processes()
         }
     }
 }
+
+
+struct PCB *create_new_process(process * proc) //create  a new process and return it's pcb
+{
+    int pid=fork();
+    if(pid==0)
+    {
+        printf("Scheduler forked a new process \n");
+        char str_time[2];
+        sprintf(str_time, "%d", proc->run_time);
+        execl("process.out",str_time,NULL);
+    }
+    return new_pcb(proc,pid);
+}
+void finished_process(struct PCB * pcb) //removes it from ready and add it to finished
+{
+    if(!pcb)return;
+    linked_list_remove(ready_processes,pcb);
+    pcb->state=FINISHED;
+    linked_list_push_front(finised_processes,new_node(pcb));
+}
+void run_process(int pid)
+{
+    kill(pid,SIGUSR2);
+}
+void pause_process(int pid){
+    kill(pid,SIGSTOP);
+}
+void generate_output() {} //TODO implement this function

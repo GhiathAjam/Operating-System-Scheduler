@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
         quanta = atoi(argv[3]);
 
     // 3. Initiate and create the scheduler and clock processes.
-    int scheduler_pid = fork();
+    int scheduler_pid =516651;// fork();
     if (scheduler_pid == 0)
     {
         //converting args to strings
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 
     //start simulation
     struct node *next_process = processes->head;
-    while (1 && next_process)
+    while (next_process)
     {
         while (curr_time == getClk())
         {

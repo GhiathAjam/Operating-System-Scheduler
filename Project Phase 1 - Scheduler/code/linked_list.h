@@ -1,3 +1,4 @@
+#pragma once
 #include <malloc.h>
 struct node
 {
@@ -39,6 +40,7 @@ void free_linked_list(struct linked_list *llist)
     if (!llist)
         return;
     free_node(llist->head);
+    free(llist);
 }
 
 void linked_list_push_front(struct linked_list *llist, struct node *newnode)
@@ -67,9 +69,52 @@ void linked_list_push_back(struct linked_list *llist, struct node *newnode)
     llist->count++;
 }
 
-void linked_list_pop_front(struct linked_list *llist, struct node *resnode)
+void linked_list_pop_front(struct linked_list *llist, struct node **resnode)
 {
-    resnode = llist->head;
+    if (!llist->head){
+        *resnode=NULL;
+        return;
+    }
+    *resnode = llist->head;
     llist->head = llist->head->next;
+    (*resnode)->next = NULL;
     llist->count--;
+    if (llist->count == 0)
+        llist->tail = NULL;
+}
+
+void linked_list_remove(struct linked_list *llist, void *data)
+{
+    if (!llist || !data)
+        return;
+
+    if (llist->count == 1)
+    {
+        if (llist->head->data == data)
+        {
+            llist->head = NULL;
+            llist->tail = NULL;
+        }
+        return;
+    }
+
+    struct node *p = llist->head;
+    if (p->data == data) //head
+    {
+        linked_list_pop_front(llist, &p);
+        return;
+    }
+
+    while (p->next && p->next->data != data)
+    {
+        p = p->next;
+    }
+    if (!p->next)
+        return;
+
+    struct node *temp = p->next;
+    if (llist->tail == temp)
+        llist->tail = p;
+    p->next = p->next->next;
+    temp->next = NULL;
 }

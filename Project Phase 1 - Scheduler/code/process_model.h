@@ -1,3 +1,4 @@
+#pragma once
 #include <sys/file.h>
 #include"linked_list.h"
 
@@ -34,3 +35,4 @@ void read_all_processes(FILE * fptr , struct linked_list * plist)
         linked_list_push_back(plist,newnode);
     }    
 }
+
