@@ -4,9 +4,10 @@
 
 enum Process_State
 {
-    WAITNG,
-    RUNNING,
-    FINISHED,
+STARTED,
+STOPED,
+RESUMED,
+FINISHED
 } Process_State;
 
 struct PCB
@@ -31,7 +32,21 @@ struct PCB * new_pcb(process * p,int pid)
     pcb->run_time=p->run_time;
     pcb->priority= p->priority;
     pcb->remaining_time=p->run_time;
-    pcb->state=WAITNG;
+    pcb->state=-1;
     pcb->waiting_time=0;
     return pcb;
+}
+
+int turn_around(struct PCB* pcb,int finished_time)
+{
+    return (finished_time-(pcb->arrival_time));
+}
+int wta(struct PCB* pcb,int finished_time)
+{
+    return (finished_time-(pcb->arrival_time))/(pcb->run_time);
+}
+//just for the testing
+void printpcb(struct PCB* pcb)
+{
+    printf("id=%d, pid=%d, arrival_time=%d, run_time=%d, priority=%d, remaining_time=%d, waiting_time=%d, state=%d \n", pcb->id,pcb->pid,pcb->arrival_time,pcb->run_time,pcb->priority,pcb->remaining_time,pcb->waiting_time,pcb-> state);
 }
