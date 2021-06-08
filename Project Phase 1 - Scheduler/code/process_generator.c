@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
         quanta = atoi(argv[3]);
 
     // 3. Initiate and create the scheduler and clock processes.
-    int scheduler_pid =516651;// fork();
+    int scheduler_pid =fork();
     if (scheduler_pid == 0)
     {
         //converting args to strings
