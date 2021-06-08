@@ -4,7 +4,7 @@ void clearResources(int);
 void initResources();
 struct linked_list *readInputFile(char *);
 int scheduler_msgq = -1;
-struct linked_list *processes=NULL;
+struct linked_list *processes = NULL;
 
 int main(int argc, char *argv[])
 {
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     int quanta = -1;
     if (algo_num == RR)
         quanta = atoi(argv[3]);
-    
+
     // 3. Initiate and create the scheduler and clock processes.
     int scheduler_pid = fork();
     if (scheduler_pid == 0)
@@ -36,11 +36,11 @@ int main(int argc, char *argv[])
         sprintf(str_qua, "%d", quanta);
         execl("./scheduler.out", argv[2], str_qua, NULL);
     }
-    
+
     int clk_pid = fork();
     if (clk_pid == 0)
         execl("./clk.out", NULL);
-    
+
     //initialize clock.
     initClk();
 
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 
     //start simulation
     struct node *next_process = processes->head;
-    while (1 /* or curr_proc < num of procs*/)
+    while (1 && next_process)
     {
         while (curr_time == getClk())
         {
@@ -61,37 +61,52 @@ int main(int argc, char *argv[])
         curr_time++;
         //printf("Proc gen, Time: %d\n", curr_time);
 
-        //TODO: implement this: (Sending of "arrived" procs)
-    while (next_process && ((process *)next_process->data)->arrival_time == curr_time)
+        //DONE: implement this: (Sending of "arrived" procs)
+        while (next_process && ((process *)next_process->data)->arrival_time == curr_time)
+        {
+
+            msgsnd(scheduler_msgq, ((process *)next_process->data), sizeof(process), !IPC_NOWAIT);
+            //printf("Proc gen, process with ID: %d has just arrived. \n\n ", ((process *)next_process->data)->pid);
+            next_process = next_process->next;
+        }
+    }
+
+    /*
+    proc-> data contains:
+    struct process_model
     {
-        
-        msgsnd(scheduler_msgq, ((process *)next_process->data), sizeof(process), !IPC_NOWAIT);
-        //printf("Proc gen, process with ID: %d has just arrived. \n\n ", ((process *)next_process->data)->pid);
-        next_process = next_process->next;
-    }
-        /*
-        while (PROCCESES[crr_proc].arrival_time >= curr_time)
-            //send curr proc to scheduler
-            curr_proc++;
-        */
-    }
+        int pid;
+        int arrival_time;
+        int run_time;
+        int priority;
+    };
+*/
+
+    // Sending empty proc to indicate no more procs are there
+    ((process *)next_process->data)->pid = -1;
+    msgsnd(scheduler_msgq, ((process *)next_process->data), sizeof(process), !IPC_NOWAIT);
+
+    //wait for scheduler
+    int stat_loc;
+    waitpid(scheduler_pid, &stat_loc, 0);
 
     // 7. Clear clock resources
     destroyClk(true);
+
+    //send TERMINATION signal to EVERYONE
+    killpg(getpgrp(), SIGINT);
 }
 
 void clearResources(int signum)
 {
-    
+
     free_linked_list(processes);
     //TODO Clears all resources in case of interruption
-    if (scheduler_msgq != -1) // iniitaized 
+    if (scheduler_msgq != -1) // iniitaized
     {
-        printf("Proc,Gen: Deleting Message Queue\n");
+        printf("Proc,Gen: Deleting Scheduler Message Queue\n");
         msgctl(scheduler_msgq, IPC_RMID, (struct msqid_ds *)0);
     }
-    //cascade the signal to group
-    killpg(getpgrp(), signum);
 
     exit(0);
 }
@@ -130,4 +145,3 @@ struct linked_list *readInputFile(char *path)
     fclose(fptr);
     return processes;
 }
-

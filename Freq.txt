@@ -2,7 +2,8 @@ Phase 1:
 1.Can we make the assumption that the ready queue is always larger than or equal the total number of processes in the input file?
 Yes, you can.
 
-2.Is it  OK to let the scheduler be responsible for decrementing the remaining time of the running process as it is synchronized with the clk? Or should the process decrement its remaining time?
+2.Is it  OK to let the scheduler be responsible for decrementing the remaining time of 
+the running process as it is synchronized with the clk? Or should the process decrement its remaining time?
 Both are acceptable.
 
 3.How can I calculate STD (standard deviation) of WTA?
@@ -13,24 +14,35 @@ According to this formula where x represents the random variable (WTA).
 Explanation: Suppose you have 4 processes (A, B, C and D).
 1. You calculate the WTA of A, B, C and D (say WTA1, WTA2, WTA3 and WTA4)
 2. You then calculate the average of these four values (say X)
-3. You then subtract each value from this average, square it, and add them together. (WTA1-X)^2 + (WTA2-X)^2 + (WTA3-X)^2 + (WTA4-X)^2
-4. Divide what you computed in (3) by the number of processes which is 4. What you computed so far is the variance. 
+3. You then subtract each value from this average, square it, and add them together.
+ (WTA1-X)^2 + (WTA2-X)^2 + (WTA3-X)^2 + (WTA4-X)^2
+4. Divide what you computed in (3) by the number of processes which is 4.
+ What you computed so far is the variance. 
 5. Standard deviation is the square root of the variance. 
 
 
 4.How can we calculate the CPU utilization in the scheduler?
-CPU utilization is simply the fraction of time when there were actual processes that are running in the system. If at the end of our simulation, the clock elapsed 20 seconds divided as follows: 15 seconds for useful work (running processes) and 5 seconds (waiting for a process to arrive or idle for any reason), then the CPU utilization should be (15/20)*100.
+CPU utilization is simply the fraction of time when there were actual processes that 
+are running in the system. If at the end of our simulation, the clock elapsed 20 seconds divided 
+as follows: 15 seconds for useful work (running processes) and 5 seconds (waiting for a process to
+ arrive or idle for any reason), then the CPU utilization should be (15/20)*100.
 
 Phase 2:
 5.Can the size of a single process exceed the maximum memory size?
 No, it can’t. 
 
-6.It's mentioned in the document that we have to allocate memory space for each process as it enters the system. I am a little confused about what this means. Should we allocate the memory as the process arrives to the scheduler or when it's this process turn to be forked?
+6.It's mentioned in the document that we have to allocate memory space for each process as it 
+enters the system. I am a little confused about what this means. Should we allocate the memory
+ as the process arrives to the scheduler or when it's this process turn to be forked?
 Before you fork any process, you have to check first whether it can be allocated or not. 
 -If there is enough memory space for this process, then memory is allocated and it is forked and scheduled.
--If there is not enough memory space for this process, then it should be pushed to a waiting list until another process finishes and its memory is deallocated from the system. You then check the waiting list again if there is any process that needs to be allocated.
+-If there is not enough memory space for this process, then it should be pushed to a waiting
+ list until another process finishes and its memory is deallocated from the system. You then check
+  the waiting list again if there is any process that needs to be allocated.
 
-7.In regards to the previous question, what order should I adopt in this waiting list if a process is deallocated and there are two processes that were in the waiting list and only one can be allocated? Should I schedule the oldest or the shortest?
+7.In regards to the previous question, what order should I adopt in this waiting list if a process
+ is deallocated and there are two processes that were in the waiting list and only one can be allocated?
+  Should I schedule the oldest or the shortest?
 It’s up to you. Both designs are acceptable. 
 
 8.In regards to the previous question, how will the waiting time be computed for such a process?
@@ -74,8 +86,12 @@ Yes.
 
 Miscellaneous:
 
-19. My code has a problem. It does not enter into section X/ The process enters the CS although a down semaphore is there/ The output is random/ The last process has an issue and terminates weirdly/ The first process has an issue and delays some time/ etc. 
-My only advice is to DEBUG, DEBUG and DEBUG. You are the expert of your own code. Also note that 95% of your code problems can be easily spotted by debugging. You need to learn debugging skills. You are in your third year and should learn to solve your code problems on your own. 
+19. My code has a problem. It does not enter into section X/ The process enters the CS although 
+a down semaphore is there/ The output is random/ The last process has an issue and terminates 
+weirdly/ The first process has an issue and delays some time/ etc. 
+My only advice is to DEBUG, DEBUG and DEBUG. You are the expert of your own code.
+ Also note that 95% of your code problems can be easily spotted by debugging. You need to learn debugging skills.
+  You are in your third year and should learn to solve your code problems on your own. 
 
 
 20.One of my teammates is not answering on their phone. What should I do?

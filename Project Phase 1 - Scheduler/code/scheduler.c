@@ -2,12 +2,14 @@
 #include "process_model.h"
 void clearResources(int);
 void initResources();
-void recieve_new_processes(struct linked_list *);
+void recieve_new_processes();
+struct linked_list *new_processes;
 int arrival_processes_msgq = -1;
 
 int main(int argc, char *argv[])
 {
     signal(SIGINT, clearResources);
+    signal(SIGALRM, recieve_new_processes);
 
     // puts(argv[0]);
 
@@ -21,7 +23,6 @@ int main(int argc, char *argv[])
     //TODO: upon termination release the clock resources.
     int curr_proc = 0;
     int curr_time = -1;
-    struct linked_list *new_processes;
     printf("Scheduler : All Resources Initialized \n");
 
     while (1)
@@ -34,12 +35,16 @@ int main(int argc, char *argv[])
         curr_time++;
 
         //TODO: recieve arrived procs , and make a new PCB for it
-        new_processes = new_linked_list(); //clear old arrivals
-        printf("Scheduler, Time: %d\n", curr_time);
-        recieve_new_processes(new_processes);
 
- 
-        //A PCB should keep track of the state of a process; running/waiting,
+        //if no more procs -> exit
+        if (((process *)(new_processes->head))->pid == -1)
+            break;
+
+        //else: new procs are added, do we really care?
+
+        printf("Scheduler, Time: %d\n", curr_time);
+
+        // A PCB should keep track of the state of a process; running/waiting,
         // execution time, remaining time, waiting time, etc.
 
         //TODO: 1.Start a new process whenever it arrives. (Fork it and give it its parameters)
@@ -50,19 +55,22 @@ int main(int argc, char *argv[])
         //              or continue running curr proc
         //              or schedule next proc if
 
-       // printf("SCHEDULER RUNNING: time is: %d, Running proc: %d\n", curr_time, curr_proc);
+        // printf("SCHEDULER RUNNING: time is: %d, Running proc: %d\n", curr_time, curr_proc);
         free_linked_list(new_processes); //remove all processes ( They should be added to queue or something before this line)
     }
 
     //TODO: 5.Report METRICS
 
     destroyClk(true);
+
+    clearResources
+    // after this is terminated -> proc gen will terminate everything
 }
 
 void clearResources(int signum)
 {
     //TODO Clears all resources in case of interruption
-    if (!arrival_processes_msgq == -1) // iniitaized 
+    if (!arrival_processes_msgq == -1) // iniitaized
     {
         printf("Deleting Message Queue\n");
         msgctl(arrival_processes_msgq, IPC_RMID, (struct msqid_ds *)0);
@@ -78,7 +86,7 @@ void initResources()
     key_t key = ftok("Makefile", 'p');
     arrival_processes_msgq = msgget(key, 0666 | IPC_CREAT);
 }
-void recieve_new_processes(struct linked_list *new_p_list)
+void recieve_new_processes()
 {
     int flag = 0;
     while (flag != -1)
@@ -88,7 +96,7 @@ void recieve_new_processes(struct linked_list *new_p_list)
 
         if (flag != -1)
         {
-            linked_list_push_back(new_p_list, new_node(np));
+            linked_list_push_back(new_processes, new_node(np));
             printf("Scheduler Recieved new process with Id: %d \n", np->pid);
         }
     }
