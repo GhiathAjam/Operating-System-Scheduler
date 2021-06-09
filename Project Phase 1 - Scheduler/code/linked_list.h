@@ -1,5 +1,6 @@
 #pragma once
 #include <malloc.h>
+
 struct node
 {
     void *data;
@@ -61,6 +62,7 @@ void linked_list_push_back(struct linked_list *llist, struct node *newnode)
         llist->head = newnode;
         llist->tail = newnode;
         llist->count++;
+        newnode->next = NULL;
         return;
     }
     llist->tail->next = newnode;
@@ -71,8 +73,9 @@ void linked_list_push_back(struct linked_list *llist, struct node *newnode)
 
 void linked_list_pop_front(struct linked_list *llist, struct node **resnode)
 {
-    if (!llist->head){
-        *resnode=NULL;
+    if (!llist->head)
+    {
+        *resnode = NULL;
         return;
     }
     *resnode = llist->head;
@@ -81,7 +84,44 @@ void linked_list_pop_front(struct linked_list *llist, struct node **resnode)
     llist->count--;
     if (llist->count == 0)
         llist->tail = NULL;
-}
+} /*
+//only valid for list of pcbs
+void linked_list_remove(struct linked_list *llist, struct PCB *data)
+{
+    // Store head node
+    struct node *temp = llist->head, *prev;
+ 
+    // If head node itself holds the key to be deleted
+    if (temp != NULL && ((struct PCB *)temp->data)->pid == data->pid) {
+        llist->head = temp->next; // Changed head
+        temp->next=NULL;
+        llist->count--;
+        
+        if(llist->count==0)
+            llist->tail=NULL;
+        return;
+    }
+ 
+    // Search for the key to be deleted, keep track of the
+    // previous node as we need to change 'prev->next'
+    while (temp != NULL && ((struct PCB *)temp->data)->pid!= data->pid) {
+        prev = temp;
+        temp = temp->next;
+    }
+ 
+    // If key was not present in linked list
+    if (temp == NULL)
+        return;
+ 
+    // Unlink the node from linked list
+        
+
+    prev->next = temp->next;
+    if(temp==llist->tail)
+        llist->tail=prev;
+    temp->next=NULL;
+    llist->count--;
+}*/
 
 void linked_list_remove(struct linked_list *llist, void *data)
 {
@@ -94,6 +134,7 @@ void linked_list_remove(struct linked_list *llist, void *data)
         {
             llist->head = NULL;
             llist->tail = NULL;
+            llist->count = 0;
         }
         return;
     }
@@ -105,16 +146,39 @@ void linked_list_remove(struct linked_list *llist, void *data)
         return;
     }
 
-    while (p->next && p->next->data != data)
+    struct node *prev;
+    // previous node as we need to change 'prev->next'
+    while (p != NULL && p->data != data)
     {
+        
+        prev = p;
         p = p->next;
     }
-    if (!p->next)
-        return;
 
-    struct node *temp = p->next;
-    if (llist->tail == temp)
-        llist->tail = p;
-    p->next = p->next->next;
-    temp->next = NULL;
+    // If key was not present in linked list
+    if (p == NULL)
+        return;
+    
+
+    // Unlink the node from linked list
+    prev->next = p->next;
+    llist->count--;
+
+    // while (p->next && p->next->data != data)
+    // {
+    //     p = p->next;
+    // }
+    // if (!p->next)
+    // {
+    //     
+    //     return;
+    // }
+    // struct node *temp = p->next;
+    // if (llist->tail == temp)
+    //     llist->tail = p;
+
+    // p->next = p->next->next;
+    // temp->next = NULL;
+    // llist->count--;
+    // 
 }

@@ -27,6 +27,8 @@ void read_one_process( FILE *fptr , process * proc)
 void read_all_processes(FILE * fptr , struct linked_list * plist)
 {
     //TODO: skip lines starting with #
+    char c[100];
+    fscanf(fptr, "%[^\n]", c);
     while(!feof(fptr))
     {
         process * p =malloc(sizeof(process));

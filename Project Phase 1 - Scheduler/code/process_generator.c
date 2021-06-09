@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
         quanta = atoi(argv[3]);
 
     // 3. Initiate and create the scheduler and clock processes.
-    int scheduler_pid =fork();
+    int scheduler_pid = fork();
     if (scheduler_pid == 0)
     {
         //converting args to strings
@@ -62,18 +62,13 @@ int main(int argc, char *argv[])
         //printf("Proc gen, Time: %d\n", curr_time);
 
         //DONE: implement this: (Sending of "arrived" procs)
-
-        //tell scheduler to receive
-        if (next_process && ((process *)next_process->data)->arrival_time == curr_time)
-            kill(scheduler_pid, SIGALRM);
-
         while (next_process && ((process *)next_process->data)->arrival_time == curr_time)
         {
-
             msgsnd(scheduler_msgq, ((process *)next_process->data), sizeof(process), !IPC_NOWAIT);
             //printf("Proc gen, process with ID: %d has just arrived. \n\n ", ((process *)next_process->data)->pid);
             next_process = next_process->next;
         }
+        kill(scheduler_pid, SIGALRM);
     }
 
     /*
@@ -88,11 +83,12 @@ int main(int argc, char *argv[])
 */
 
     //tell scheduler to receive
-    kill(scheduler_pid, SIGALRM);
 
     // Sending empty proc to indicate no more procs are there
+    next_process=malloc(sizeof(process));
     ((process *)next_process->data)->pid = -1;
     msgsnd(scheduler_msgq, ((process *)next_process->data), sizeof(process), !IPC_NOWAIT);
+    kill(scheduler_pid, SIGALRM);
 
     //wait for scheduler
     int stat_loc;

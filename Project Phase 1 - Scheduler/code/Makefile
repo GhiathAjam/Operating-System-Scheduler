@@ -7,12 +7,13 @@ build:
 
 clean:
 	rm -f *.out
+	ipcrm -a
 #	rm -f *.out  processes.txt
 
 all: clean build run
 
 run:
-	./process_generator.out processes.txt 3
+	./process_generator.out processes.txt 4
 
 gen:
 	gcc test_generator.c -o test_generator.out
