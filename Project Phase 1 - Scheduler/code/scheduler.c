@@ -450,6 +450,13 @@ void generate_output(int curr_time, int idle_waiting)
 void HP_First()
 {
     printf("enter HPF \n");
+    if (curr_process && curr_process->remaining_time == 0)
+    {
+        finished_process(curr_process);
+        curr_process->waiting_time = curr_process->finish_time - curr_process->arrival_time;
+        curr_process = NULL;
+    }
+
     if (curr_process)
         decreaseTime(curr_process);
     if (ready_processes->count == 0)
@@ -467,7 +474,7 @@ void HP_First()
         printf("Finish Process -> %d \n", curr_process->id);
         curr_process->state = FINISHED;
         curr_process->finish_time = getClk();
-        printpcb(curr_process, getClk());
+        // printpcb(curr_process, getClk());
         finished_process(curr_process);
         curr_process = NULL;
     }
@@ -509,8 +516,8 @@ void HP_First()
             // linked_list_remove(ready_processes, temp);
             contextSwitch(curr_process, temp);
 
-            run_process(temp);
-            pause_process(curr_process);
+            run_process(temp->pid);
+            pause_process(curr_process->pid);
 
             // linked_list_push_front(ready_processes, curr_process);
             curr_process = temp;
@@ -578,7 +585,7 @@ void SJ_F()
     }
     puts("2");
 
-    printf("cc: %d\n",ready_processes->count);
+    printf("cc: %d\n", ready_processes->count);
     if (ready_processes->count == 0)
     {
         puts("SJF IDLE");
@@ -588,12 +595,12 @@ void SJ_F()
     }
     puts("3");
 
-    if(ready_processes->head)
+    if (ready_processes->head)
     {
         puts("HEAD NOR NULL");
     }
 
-    if(ready_processes->tail)
+    if (ready_processes->tail)
     {
         puts("TAIL NOR NULL");
     }
