@@ -621,4 +621,5 @@ void SJ_F()
     printpcb(shrt, getClk());
     run_process(shrt->pid);
     curr_process = shrt;
+    decreaseTime(curr_process);
 }
