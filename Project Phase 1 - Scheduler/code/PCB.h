@@ -62,7 +62,7 @@ void printpcb(struct PCB *pcb, int curr_time)
     if (!(access("scheduler.log", F_OK) == 0))
     {
         filePointer = fopen("scheduler.log", "a+");
-        fprintf(filePointer,"AT time x process y  state arr w total z remain y wait k\n");
+        fprintf(filePointer,"#AT time x process y  state arr w total z remain y wait k\n");
     }
     else
         filePointer = fopen("scheduler.log", "a+");

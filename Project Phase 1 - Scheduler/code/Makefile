@@ -13,7 +13,7 @@ clean:
 all: clean build run
 
 run:
-	./process_generator.out processes.txt 4
+	./process_generator.out processes.txt 5 2
 
 gen:
 	gcc test_generator.c -o test_generator.out

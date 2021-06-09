@@ -48,7 +48,8 @@ int main(int argc, char *argv[])
 
     enum Scheduling_Algorithms algo_num = atoi(argv[0]);
     int quanta = atoi(argv[1]);
-    algo_num = SRTN;
+    int quanta_counter = 1;
+    struct node *curr_rr_node = NULL;
     printf("Scheduler started, algo: %d, quanta: %d\n", algo_num, quanta);
 
     initClk();
@@ -99,6 +100,22 @@ int main(int argc, char *argv[])
         switch (algo_num)
         {
         case FCFS:
+		if (curr_proc)
+            {
+                decreaseTime(curr_proc);
+
+                if (curr_proc->remaining_time == 0) //finished
+                {
+                    printf("Scheduler : Process %d finished\n", curr_proc->pid);
+                    finished_process(curr_proc);
+                    curr_proc = NULL;
+                }
+            }
+            if (!curr_proc && ready_processes->head)
+            {
+                contextSwitch(curr_proc, ready_processes->head->data);
+                curr_proc = ready_processes->head->data;
+            }
             break;
         case SJF:
             break;
@@ -157,12 +174,96 @@ int main(int argc, char *argv[])
             }
             break;
         case RR:
+
+            if(curr_proc)
+                decreaseTime(curr_proc);                                 //decrease the process remaining time
+
+
+            if (!curr_proc && !recieved_all) //initialize
+            {
+                curr_rr_node = ready_processes->head;
+                curr_proc = (struct PCB *)(curr_rr_node->data);
+                run_process(curr_proc->pid);                             //run the process
+                curr_proc->state = STARTED;                              //set the status of the prosses
+                printpcb((struct PCB *)(curr_rr_node->data), curr_time); //print data in schedular.lod
+                quanta_counter++;                                        //inc quanta counter
+                //decreaseTime(curr_proc);                                 //decrease the process remaining time
+            }
+            else
+            {
+                //check for contex switching
+                if ((quanta_counter > quanta) && ((ready_processes->count) > 1)) //means the process has to contex switch and there is another process
+                {
+                    //first check for the prev process status
+                    if (curr_proc->remaining_time == 0) //process finished
+                    {
+                        curr_proc->finish_time = curr_time;
+                        curr_proc->waiting_time = (turn_around(curr_proc) - (curr_proc->run_time));
+                        printf("Scheduler : Process %d finished\n", curr_proc->pid);
+                        finished_process(curr_proc);
+                        printpcb((struct PCB *)(curr_rr_node->data), curr_time); //print data in schedular.lod
+                    }
+                    else //process paussed
+                    {
+                        curr_proc->state = STOPED; //set the status of the prosses
+                        pause_process(curr_proc->pid);
+                        printpcb((struct PCB *)(curr_rr_node->data), curr_time); //print data in schedular.lod
+                    }
+                    //run the new process
+
+                    //SET QUANTA COUNTER
+                    quanta_counter = 1;
+                    curr_rr_node = curr_rr_node->next;
+                    if (!curr_rr_node) //round up
+                        curr_rr_node = ready_processes->head;
+
+                    curr_proc = (struct PCB *)(curr_rr_node->data);
+
+                    if ((curr_proc->state) == -1) //then it's an idle process
+                    {
+                        curr_proc->waiting_time = ((curr_time - (curr_proc->arrival_time)) - ((curr_proc->run_time) - (curr_proc->remaining_time)));
+                        curr_proc->state = STARTED; //set the status of the prosses
+                    }
+                    else if ((curr_proc->state) == STOPED)
+                    {
+                        curr_proc->waiting_time = ((curr_time - (curr_proc->arrival_time)) - ((curr_proc->run_time) - (curr_proc->remaining_time)));
+                        curr_proc->state = RESUMED; //set the status of the prosses
+                    }
+                    printpcb((struct PCB *)(curr_rr_node->data), curr_time); //print data in schedular.lod
+                    if (curr_proc->remaining_time == 1)                      //about to finish before it's quanta finish
+                    {
+                        quanta_counter = quanta; //force ti finish next time step
+                    }
+                    run_process(curr_proc->pid); //run the process
+                    //decreaseTime(curr_proc);     //decrease the process remaining time
+                    quanta_counter++;            //inc quanta counter
+                }
+                else //check for the curr_proc status of the running process not the quanta
+                {
+
+                    if (curr_proc->remaining_time == 0 && ((ready_processes->count) == 1)) //last process finished
+                    {
+                        curr_proc->finish_time = curr_time;
+                        curr_proc->waiting_time = (turn_around(curr_proc) - (curr_proc->run_time));
+                        printf("Scheduler : Process %d finished\n", curr_proc->pid);
+                        finished_process(curr_proc);
+                        printpcb((struct PCB *)(curr_rr_node->data), curr_time); //print data in schedular.lod
+                    }
+
+                    if (curr_proc->remaining_time == 1) //about to finish before it's quanta finish
+                    {
+                        quanta_counter = quanta; //force ti finish next time step
+                    }
+                    //decreaseTime(curr_proc);
+                    quanta_counter++;
+                }
+            }
+
             break;
         }
-        if(recieved_all&&ready_processes->count==0)
+        if (recieved_all && ready_processes->count == 0)
             break;
     }
-
 
     generate_output();
 
