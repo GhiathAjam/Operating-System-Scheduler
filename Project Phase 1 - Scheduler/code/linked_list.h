@@ -1,11 +1,11 @@
 #pragma once
 #include <malloc.h>
 
-struct node
+typedef struct node
 {
     void *data;
     struct node *next;
-};
+} node;
 
 struct node *new_node(void *data)
 {
@@ -128,6 +128,9 @@ void linked_list_remove(struct linked_list *llist, void *data)
     if (!llist || !data)
         return;
 
+    if (llist->count == 0)
+        return;
+
     if (llist->count == 1)
     {
         if (llist->head->data == data)
@@ -160,6 +163,9 @@ void linked_list_remove(struct linked_list *llist, void *data)
         return;
 
     // Unlink the node from linked list
+    if (p == llist->tail)
+        llist->tail = prev;
+
     prev->next = p->next;
     llist->count--;
 

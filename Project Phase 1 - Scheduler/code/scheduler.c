@@ -14,6 +14,7 @@ void pause_process(int pid);
 void generate_output(int curr_time, int idle_waiting);
 struct PCB *ExtractMin(struct linked_list *p);
 void HP_First();
+void SJ_F();
 
 //struct linked_list *new_processes;     //list of processes
 struct linked_list *ready_processes;   //list of pcbs
@@ -144,6 +145,7 @@ int main(int argc, char *argv[])
             }
             break;
         case SJF:
+            SJ_F();
             break;
         case HPF:
             HP_First();
@@ -363,9 +365,9 @@ void recieve_new_processes(int signum)
             linked_list_push_back(add_processes, new_node(pcb));
         }
     }
-    PCB *temp = ExtractMin(ready_processes);
-    if (temp)
-        printf("\n\n min Pr --> %d\n\n", temp->priority);
+    // PCB *temp = ExtractMin(ready_processes);
+    // if (temp)
+    //     printf("\n\n min Pr --> %d\n\n", temp->priority);
     recieved = true;
 }
 
@@ -391,6 +393,8 @@ void finished_process(struct PCB *pcb) //removes it from ready and add it to fin
     linked_list_remove(ready_processes, pcb);
     printf("AFTER REMOVE FROM READY \n");
     pcb->state = FINISHED;
+    pcb->finish_time = getClk();
+    printpcb(pcb, getClk());
     linked_list_push_front(finised_processes, new_node(pcb));
 }
 // called every second to decrease  the remainig time
@@ -467,7 +471,6 @@ void HP_First()
         printpcb(curr_process, getClk());
         finished_process(curr_process);
         curr_process = NULL;
-
     }
     if (curr_process == NULL) // No running process
     {
@@ -548,4 +551,76 @@ struct PCB *ExtractMin(struct linked_list *p)
     // printf("Exit  while \n");
     // fflush(stdout);
     return ((struct PCB *)min->data);
+}
+
+void SJ_F()
+{
+    puts("SJF START");
+
+    //finished
+    if (curr_process && curr_process->remaining_time == 0)
+    {
+        finished_process(curr_process);
+        curr_process->waiting_time = curr_process->finish_time - curr_process->arrival_time;
+        curr_process = NULL;
+    }
+
+    puts("1");
+    //didn't finish
+    if (curr_process)
+    {
+        puts("DECREASING");
+        decreaseTime(curr_process);
+        if (curr_process->remaining_time == 0)
+        {
+            finished_process(curr_process);
+            curr_process = NULL;
+        }
+        return;
+    }
+    puts("2");
+
+    printf("cc: %d\n",ready_processes->count);
+    if (ready_processes->count == 0)
+    {
+        puts("SJF IDLE");
+        idle_waiting++;
+        puts("33");
+        return;
+    }
+    puts("3");
+
+    if(ready_processes->head)
+    {
+        puts("HEAD NOR NULL");
+    }
+
+    if(ready_processes->tail)
+    {
+        puts("TAIL NOR NULL");
+    }
+    // ready is not empty, curr is NULL , get the shortest
+    node *tmp = ready_processes->head;
+    puts("4");
+    if (!tmp)
+        puts("5555555");
+    PCB *shrt = ((PCB *)(tmp->data));
+    puts("11");
+    while (tmp)
+    {
+        if (shrt->run_time > ((PCB *)(tmp->data))->run_time)
+        {
+            shrt = tmp->data;
+        }
+        tmp = tmp->next;
+    }
+    puts("22");
+
+    printf("sjf starting: %d\n", shrt->id);
+    //shrt now is shortest
+    shrt->state = STARTED;
+    shrt->waiting_time = getClk() - shrt->arrival_time;
+    printpcb(shrt, getClk());
+    run_process(shrt->pid);
+    curr_process = shrt;
 }
