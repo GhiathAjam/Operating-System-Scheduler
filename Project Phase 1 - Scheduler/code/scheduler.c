@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
             if (curr_proc && ((ready_processes->count) > 0))
                 decreaseTime(curr_proc); //decrease the process remaining time
 
-            if (!curr_proc && !recieved_all && ((ready_processes->count) > 0)) //initialize
+            if (!curr_proc && ((ready_processes->count) > 0)) //initialize
             {
                 printf(".................................init\n");
                 curr_rr_node = ready_processes->head;
