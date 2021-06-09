@@ -39,6 +39,7 @@ void contextSwitch(struct PCB *curr_proc, struct PCB *next_proc)
     {
         pause_process(curr_proc->pid);
         curr_proc->state = STOPED;
+        curr_process->last_stop_time = getClk();
     }
     //run next
     //change it's state
@@ -51,9 +52,7 @@ void contextSwitch(struct PCB *curr_proc, struct PCB *next_proc)
     else
     {
         next_proc->state = RESUMED;
-        next_proc->waiting_time = ((getClk - (next_proc->arrival_time)) -
-                                   ((next_proc->run_time) -
-                                    (next_proc->remaining_time)));
+        next_proc->waiting_time = getClk() - next_proc->last_stop_time;
     }
 
     printpcb(curr_proc, getClk());
@@ -467,7 +466,6 @@ void HP_First()
         printpcb(curr_process, getClk());
         finished_process(curr_process);
         curr_process = NULL;
-
     }
     if (curr_process == NULL) // No running process
     {
@@ -489,8 +487,7 @@ void HP_First()
         else if (curr_process->state == STOPED)
         {
             curr_process->state = RESUMED;
-            curr_process->waiting_time = ((getClk - (curr_process->arrival_time)) - ((curr_process->run_time) - (curr_process->remaining_time)));
-
+            curr_process->waiting_time = getClk() - curr_process->last_stop_time;
             printpcb(curr_process, getClk());
             run_process(curr_process->pid);
         }
