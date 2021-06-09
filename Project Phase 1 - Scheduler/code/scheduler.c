@@ -11,7 +11,7 @@ void finished_process(struct PCB *pcb); //removes it from ready and add it to fi
 void decreaseTime(struct PCB *curr_proc);
 void run_process(int pid);
 void pause_process(int pid);
-void generate_output();
+void generate_output(int curr_time,int idle_waiting);
 
 //struct linked_list *new_processes;     //list of processes
 struct linked_list *ready_processes;   //list of pcbs
@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
     enum Scheduling_Algorithms algo_num = atoi(argv[0]);
     int quanta = atoi(argv[1]);
     int quanta_counter = 1;
+    int idle_waiting = 0;
     struct node *curr_rr_node = NULL;
     printf("Scheduler started, algo: %d, quanta: %d\n", algo_num, quanta);
 
@@ -100,7 +101,7 @@ int main(int argc, char *argv[])
         switch (algo_num)
         {
         case FCFS:
-		if (curr_proc)
+            if (curr_proc)
             {
                 decreaseTime(curr_proc);
 
@@ -174,23 +175,31 @@ int main(int argc, char *argv[])
             }
             break;
         case RR:
+            if ((ready_processes->count) == 0)  //idle waiting
+            idle_waiting++;
+            if (curr_proc)
+                decreaseTime(curr_proc); //decrease the process remaining time
 
-            if(curr_proc)
-                decreaseTime(curr_proc);                                 //decrease the process remaining time
-
-
-            if (!curr_proc && !recieved_all) //initialize
+            if (!curr_proc && !recieved_all && ((ready_processes->count) > 0)) //initialize
             {
+                printf(".................................init\n");
                 curr_rr_node = ready_processes->head;
                 curr_proc = (struct PCB *)(curr_rr_node->data);
                 run_process(curr_proc->pid);                             //run the process
                 curr_proc->state = STARTED;                              //set the status of the prosses
                 printpcb((struct PCB *)(curr_rr_node->data), curr_time); //print data in schedular.lod
-                quanta_counter++;                                        //inc quanta counter
-                //decreaseTime(curr_proc);                                 //decrease the process remaining time
+                if (curr_proc->remaining_time == 1)                      //about to finish before it's quanta finish
+                {
+                    quanta_counter = quanta; //force ti finish next time step
+                }
+                quanta_counter++; //inc quanta counter
             }
-            else
+            else if (((ready_processes->count) > 0))
             {
+                if (curr_proc->id == 3)
+                {
+                    printf("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa..................%d.......rem %d\n", quanta_counter, ((ready_processes->count)));
+                }
                 //check for contex switching
                 if ((quanta_counter > quanta) && ((ready_processes->count) > 1)) //means the process has to contex switch and there is another process
                 {
@@ -200,22 +209,31 @@ int main(int argc, char *argv[])
                         curr_proc->finish_time = curr_time;
                         curr_proc->waiting_time = (turn_around(curr_proc) - (curr_proc->run_time));
                         printf("Scheduler : Process %d finished\n", curr_proc->pid);
+                        curr_rr_node = curr_rr_node->next;
+                        if (!curr_rr_node) //round up
+                            curr_rr_node = ready_processes->head;
                         finished_process(curr_proc);
-                        printpcb((struct PCB *)(curr_rr_node->data), curr_time); //print data in schedular.lod
+                        printpcb(curr_proc, curr_time); //print data in schedular.lod
                     }
-                    else //process paussed
+                    else //process stoped
                     {
+                        printf(".................... %d......\n", curr_proc->id);
                         curr_proc->state = STOPED; //set the status of the prosses
                         pause_process(curr_proc->pid);
-                        printpcb((struct PCB *)(curr_rr_node->data), curr_time); //print data in schedular.lod
+
+                        printpcb(curr_proc, curr_time); //print data in schedular.lod
+
+                        curr_rr_node = curr_rr_node->next;
+                        if (!curr_rr_node) //round up
+                            curr_rr_node = ready_processes->head;
+
+                        linked_list_remove(ready_processes, curr_proc);
+                        linked_list_push_back(ready_processes, new_node(curr_proc));
                     }
                     //run the new process
 
                     //SET QUANTA COUNTER
                     quanta_counter = 1;
-                    curr_rr_node = curr_rr_node->next;
-                    if (!curr_rr_node) //round up
-                        curr_rr_node = ready_processes->head;
 
                     curr_proc = (struct PCB *)(curr_rr_node->data);
 
@@ -229,14 +247,14 @@ int main(int argc, char *argv[])
                         curr_proc->waiting_time = ((curr_time - (curr_proc->arrival_time)) - ((curr_proc->run_time) - (curr_proc->remaining_time)));
                         curr_proc->state = RESUMED; //set the status of the prosses
                     }
-                    printpcb((struct PCB *)(curr_rr_node->data), curr_time); //print data in schedular.lod
-                    if (curr_proc->remaining_time == 1)                      //about to finish before it's quanta finish
+                    printpcb(curr_proc, curr_time);     //print data in schedular.lod
+                    if (curr_proc->remaining_time == 1) //about to finish before it's quanta finish
                     {
                         quanta_counter = quanta; //force ti finish next time step
                     }
                     run_process(curr_proc->pid); //run the process
                     //decreaseTime(curr_proc);     //decrease the process remaining time
-                    quanta_counter++;            //inc quanta counter
+                    quanta_counter++; //inc quanta counter
                 }
                 else //check for the curr_proc status of the running process not the quanta
                 {
@@ -247,7 +265,7 @@ int main(int argc, char *argv[])
                         curr_proc->waiting_time = (turn_around(curr_proc) - (curr_proc->run_time));
                         printf("Scheduler : Process %d finished\n", curr_proc->pid);
                         finished_process(curr_proc);
-                        printpcb((struct PCB *)(curr_rr_node->data), curr_time); //print data in schedular.lod
+                        printpcb(curr_proc, curr_time); //print data in schedular.lod
                     }
 
                     if (curr_proc->remaining_time == 1) //about to finish before it's quanta finish
@@ -265,7 +283,7 @@ int main(int argc, char *argv[])
             break;
     }
 
-    generate_output();
+    generate_output(curr_time,idle_waiting);
 
     // after this is terminated -> proc gen will terminate everything
     destroyClk(true);
@@ -364,4 +382,37 @@ void pause_process(int pid)
     kill(pid, SIGSTOP);
 }
 
-void generate_output() {} //TODO implement this function
+void generate_output(int curr_time,int idle_waiting)
+{
+    FILE *filePointer = fopen("scheduler.perf", "a+");
+    int  tot_wait = 0;
+    double ulti,tot_wta = 0.0, avg_wait, avg_wta;
+    struct node *tt = finised_processes->head;
+    struct PCB *pp;
+    int count = 0;
+    while (tt)
+    {
+        pp = (struct PCB *)tt->data;
+        tot_wait += pp->waiting_time;
+        tot_wta += wta(pp);
+        count++;
+        tt = tt->next;
+    }
+    
+    double value = (double)((curr_time - idle_waiting) * 100) / curr_time;
+    int v = (int)((value * 100) + .5);
+    ulti= v / 100.0;
+
+
+ 
+
+     value = (double)tot_wta / (count);
+     v = (int)(value * 100 + .5);
+    avg_wta = v / 100.0;
+
+    value = (double)tot_wait / (count);
+    v = (int)(value * 100 + .5);
+    avg_wait = v / 100.0;
+
+    fprintf(filePointer, "CPU utilization= %.2f %%\nAvg WTA= %.2f\nAvg Waiting=%.2f\n", ulti, avg_wta, avg_wait);
+}
