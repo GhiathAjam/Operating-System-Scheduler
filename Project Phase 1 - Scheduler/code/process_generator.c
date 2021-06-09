@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
         //DONE: implement this: (Sending of "arrived" procs)
         while (next_process && ((process *)next_process->data)->arrival_time == curr_time)
         {
+            printf("sending process no. %d at time step=  %d\n",((process *)next_process->data)->pid,curr_time);
             msgsnd(scheduler_msgq, ((process *)next_process->data), sizeof(process), !IPC_NOWAIT);
             //printf("Proc gen, process with ID: %d has just arrived. \n\n ", ((process *)next_process->data)->pid);
             next_process = next_process->next;
