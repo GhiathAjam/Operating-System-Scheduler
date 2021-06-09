@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "headers.h": "c",
+        "process_model.h": "c",
+        "unordered_map": "c",
+        "linked_list.h": "c"
+    }
+}
