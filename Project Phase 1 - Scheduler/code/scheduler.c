@@ -12,6 +12,8 @@ void decreaseTime(struct PCB *curr_proc);
 void run_process(int pid);
 void pause_process(int pid);
 void generate_output(int curr_time, int idle_waiting);
+struct PCB *ExtractMin(struct linked_list *p);
+void HP_First();
 
 //struct linked_list *new_processes;     //list of processes
 struct linked_list *ready_processes;   //list of pcbs
@@ -22,9 +24,12 @@ struct linked_list *add_processes; //list of pcbs of processes that was added in
                                    //preemptive algorithms will need it
 
 int arrival_processes_msgq = -1;
+int idle_waiting = 0;
 
 bool recieved = false;
 bool recieved_all = false;
+
+PCB *curr_process = NULL;
 //stops current process and starts new process
 void contextSwitch(struct PCB *curr_proc, struct PCB *next_proc)
 {
@@ -38,7 +43,21 @@ void contextSwitch(struct PCB *curr_proc, struct PCB *next_proc)
     //run next
     //change it's state
     run_process(next_proc->pid);
-    next_proc->state = STARTED;
+    if (next_proc->state == -1)
+    {
+        next_proc->state = STARTED;
+        next_proc->waiting_time = getClk() - next_proc->arrival_time;
+    }
+    else
+    {
+        next_proc->state = RESUMED;
+        next_proc->waiting_time = ((getClk - (next_proc->arrival_time)) -
+                                   ((next_proc->run_time) -
+                                    (next_proc->remaining_time)));
+    }
+
+    printpcb(curr_proc, getClk());
+    printpcb(next_proc, getClk());
 }
 
 int main(int argc, char *argv[])
@@ -49,7 +68,7 @@ int main(int argc, char *argv[])
     enum Scheduling_Algorithms algo_num = atoi(argv[0]);
     int quanta = atoi(argv[1]);
     int quanta_counter = 1;
-    int idle_waiting = 0;
+
     struct node *curr_rr_node = NULL;
     printf("Scheduler started, algo: %d, quanta: %d\n", algo_num, quanta);
 
@@ -90,8 +109,14 @@ int main(int argc, char *argv[])
         //              or continue running curr proc
         //              or schedule next proc if
 
+        int x = 1;
         while (!recieved && !recieved_all)
         {
+            if (x)
+            {
+                printf("AAAA \n");
+                x = 0;
+            }
         }
         printf("Scheduler, Time: %d\n", curr_time);
         printf("Scheduler, Ready: %d\n", ready_processes->count);
@@ -121,6 +146,7 @@ int main(int argc, char *argv[])
         case SJF:
             break;
         case HPF:
+            HP_First();
             break;
         case SRTN:
 
@@ -175,13 +201,13 @@ int main(int argc, char *argv[])
             }
             break;
         case RR:
-            if ((ready_processes->count) == 0) //idle waiting
+            if ((ready_processes->count) == 0 && !curr_proc) //idle waiting
                 idle_waiting++;
 
             if (curr_proc && ((ready_processes->count) > 0))
                 decreaseTime(curr_proc); //decrease the process remaining time
 
-            if (!curr_proc && !recieved_all && ((ready_processes->count) > 0)) //initialize
+            if (!curr_proc && ((ready_processes->count) > 0)) //initialize
             {
                 printf(".................................init\n");
                 curr_rr_node = ready_processes->head;
@@ -279,7 +305,8 @@ int main(int argc, char *argv[])
 
             break;
         }
-        if (recieved_all && ready_processes->count == 0)
+        printf("CNT --> %d \n ", ready_processes->count);
+        if (recieved_all && ready_processes->count == 0 && !curr_process)
             break;
     }
 
@@ -336,6 +363,9 @@ void recieve_new_processes(int signum)
             linked_list_push_back(add_processes, new_node(pcb));
         }
     }
+    PCB *temp = ExtractMin(ready_processes);
+    if (temp)
+        printf("\n\n min Pr --> %d\n\n", temp->priority);
     recieved = true;
 }
 
@@ -359,7 +389,7 @@ void finished_process(struct PCB *pcb) //removes it from ready and add it to fin
         return;
 
     linked_list_remove(ready_processes, pcb);
-
+    printf("AFTER REMOVE FROM READY \n");
     pcb->state = FINISHED;
     linked_list_push_front(finised_processes, new_node(pcb));
 }
@@ -412,4 +442,110 @@ void generate_output(int curr_time, int idle_waiting)
     avg_wait = v / 100.0;
 
     fprintf(filePointer, "CPU utilization= %.2f %%\nAvg WTA= %.2f\nAvg Waiting=%.2f\n", ulti, avg_wta, avg_wait);
+}
+
+void HP_First()
+{
+    printf("enter HPF \n");
+    if (curr_process)
+        decreaseTime(curr_process);
+    if (ready_processes->count == 0)
+    {
+        if (!curr_process)
+        {
+            printf("IDLE \n\n");
+            idle_waiting++;
+            return;
+        }
+    }
+    if (curr_process && curr_process->remaining_time <= 0)
+    {
+
+        printf("Finish Process -> %d \n", curr_process->id);
+        curr_process->state = FINISHED;
+        curr_process->finish_time = getClk();
+        printpcb(curr_process, getClk());
+        finished_process(curr_process);
+        curr_process = NULL;
+
+    }
+    if (curr_process == NULL) // No running process
+    {
+
+        curr_process = ExtractMin(ready_processes);
+        if (!curr_process)
+            return;
+        // linked_list_remove(ready_processes, curr_process);
+
+        printf("start process -> %d \n", curr_process->id);
+        if (curr_process->state == -1) // first time to Start
+        {
+            curr_process->state = STARTED;
+            curr_process->waiting_time = getClk() - curr_process->arrival_time;
+
+            printpcb(curr_process, getClk());
+            run_process(curr_process->pid);
+        }
+        else if (curr_process->state == STOPED)
+        {
+            curr_process->state = RESUMED;
+            curr_process->waiting_time = ((getClk - (curr_process->arrival_time)) - ((curr_process->run_time) - (curr_process->remaining_time)));
+
+            printpcb(curr_process, getClk());
+            run_process(curr_process->pid);
+        }
+    }
+    else // there is a running process just check
+         // if it has a higher priority
+    {
+        // decreaseTime(curr_process);
+        struct PCB *temp = ExtractMin(ready_processes);
+        if (!temp)
+            return;
+        if (temp->priority < curr_process->priority)
+        {
+            // to do switch between them
+            // linked_list_remove(ready_processes, temp);
+            contextSwitch(curr_process, temp);
+
+            run_process(temp);
+            pause_process(curr_process);
+
+            // linked_list_push_front(ready_processes, curr_process);
+            curr_process = temp;
+            printf("stop Process -> %d \n", curr_process->id);
+            printf("resume Process -> %d \n", temp->id);
+        }
+    }
+}
+
+struct PCB *ExtractMin(struct linked_list *p)
+{
+    struct node *temp = p->head;
+    struct node *min;
+
+    if (p->count == 0) // empty linked list
+    {
+        // printf("NO NODES\n");
+        // fflush(stdout);
+        return (struct PCB *)NULL;
+    }
+    if (p->count == 1) // only one node
+    {
+        // printf("one NODES\n");
+        // fflush(stdout);
+        return ((struct PCB *)temp->data);
+    }
+    min = temp;
+    // printf("enter while \n");
+    // fflush(stdout);
+    while (temp)
+    {
+        if (((struct PCB *)temp->data)->priority < ((struct PCB *)min->data)->priority)
+            min = temp;
+        temp = temp->next;
+    }
+    // printf("Exit  while \n");
+    // fflush(stdout);
+    return ((struct PCB *)min->data);
 }

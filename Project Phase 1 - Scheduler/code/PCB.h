@@ -13,7 +13,7 @@ enum Process_State
     FINISHED
 } Process_State;
 
-struct PCB
+typedef struct PCB
 {
     int id;  //from txt file
     int pid; // real process id
@@ -24,7 +24,7 @@ struct PCB
     int waiting_time;
     int finish_time;
     enum Process_State state;
-};
+}PCB;
 
 struct PCB *new_pcb(process *p, int pid)
 {

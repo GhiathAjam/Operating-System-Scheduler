@@ -93,6 +93,8 @@ int main(int argc, char *argv[])
 
     //wait for scheduler
     int stat_loc;
+
+    
     waitpid(scheduler_pid, &stat_loc, 0);
 
     // 7. Clear clock resources
