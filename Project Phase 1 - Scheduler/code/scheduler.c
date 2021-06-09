@@ -569,11 +569,11 @@ void SJ_F()
     {
         puts("DECREASING");
         decreaseTime(curr_process);
-        if (curr_process->remaining_time == 0)
-        {
-            finished_process(curr_process);
-            curr_process = NULL;
-        }
+        // if (curr_process->remaining_time == 0)
+        // {
+        //     finished_process(curr_process);
+        //     curr_process = NULL;
+        // }
         return;
     }
     puts("2");
