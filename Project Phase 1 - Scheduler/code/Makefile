@@ -7,6 +7,8 @@ build:
 
 clean:
 	rm -f *.out
+	rm -f *.log
+	rm -f *.perf
 	ipcrm -a
 #	rm -f *.out  processes.txt
 

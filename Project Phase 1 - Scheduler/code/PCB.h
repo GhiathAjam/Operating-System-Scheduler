@@ -1,7 +1,7 @@
 #pragma once
 #include <sys/file.h>
 #include <string.h>
-#include<unistd.h>
+#include <unistd.h>
 #include <malloc.h>
 #include "process_model.h"
 
@@ -62,7 +62,7 @@ void printpcb(struct PCB *pcb, int curr_time)
     if (!(access("scheduler.log", F_OK) == 0))
     {
         filePointer = fopen("scheduler.log", "a+");
-        fprintf(filePointer,"#AT time x process y  state arr w total z remain y wait k\n");
+        fprintf(filePointer, "#AT time x process y  state arr w total z remain y wait k\n");
     }
     else
         filePointer = fopen("scheduler.log", "a+");
@@ -84,14 +84,11 @@ void printpcb(struct PCB *pcb, int curr_time)
         break;
     }
 
-
-
-
-    fprintf(filePointer,"AT time %d process %d %s arr %d total %d remain %d wait %d", curr_time, pcb->id, state, pcb->arrival_time, pcb->run_time, pcb->remaining_time, pcb->waiting_time);
+    fprintf(filePointer, "AT time %d process %d %s arr %d total %d remain %d wait %d", curr_time, pcb->id, state, pcb->arrival_time, pcb->run_time, pcb->remaining_time, pcb->waiting_time);
     if ((pcb->state) == FINISHED)
     {
-        fprintf(filePointer," TA %d  WTA %.2f", turn_around(pcb), wta(pcb));
+        fprintf(filePointer, " TA %d  WTA %.2f", turn_around(pcb), wta(pcb));
     }
-    fprintf(filePointer,"\n");
+    fprintf(filePointer, "\n");
     fclose(filePointer);
 }

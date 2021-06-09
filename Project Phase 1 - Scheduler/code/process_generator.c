@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
         //DONE: implement this: (Sending of "arrived" procs)
         while (next_process && ((process *)next_process->data)->arrival_time == curr_time)
         {
-            printf("sending process no. %d at time step=  %d\n",((process *)next_process->data)->pid,curr_time);
+            printf("sending process no. %d at time step=  %d\n", ((process *)next_process->data)->pid, curr_time);
             msgsnd(scheduler_msgq, ((process *)next_process->data), sizeof(process), !IPC_NOWAIT);
             //printf("Proc gen, process with ID: %d has just arrived. \n\n ", ((process *)next_process->data)->pid);
             next_process = next_process->next;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     //tell scheduler to receive
 
     // Sending empty proc to indicate no more procs are there
-    next_process=malloc(sizeof(process));
+    next_process = malloc(sizeof(process));
     ((process *)next_process->data)->pid = -1;
     msgsnd(scheduler_msgq, ((process *)next_process->data), sizeof(process), !IPC_NOWAIT);
     kill(scheduler_pid, SIGALRM);

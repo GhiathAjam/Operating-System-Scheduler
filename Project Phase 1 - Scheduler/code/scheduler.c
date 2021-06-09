@@ -11,7 +11,7 @@ void finished_process(struct PCB *pcb); //removes it from ready and add it to fi
 void decreaseTime(struct PCB *curr_proc);
 void run_process(int pid);
 void pause_process(int pid);
-void generate_output(int curr_time,int idle_waiting);
+void generate_output(int curr_time, int idle_waiting);
 
 //struct linked_list *new_processes;     //list of processes
 struct linked_list *ready_processes;   //list of pcbs
@@ -175,8 +175,8 @@ int main(int argc, char *argv[])
             }
             break;
         case RR:
-            if ((ready_processes->count) == 0)  //idle waiting
-            idle_waiting++;
+            if ((ready_processes->count) == 0) //idle waiting
+                idle_waiting++;
 
             if (curr_proc && ((ready_processes->count) > 0))
                 decreaseTime(curr_proc); //decrease the process remaining time
@@ -202,7 +202,8 @@ int main(int argc, char *argv[])
                 {
                     //first check for the prev process status
                     if (curr_proc->remaining_time == 0) //process finished
-                    { printf("a7aaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+                    {
+                        printf("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
                         curr_proc->finish_time = curr_time;
                         curr_proc->waiting_time = (turn_around(curr_proc) - (curr_proc->run_time));
                         printf("Scheduler : Process %d finished\n", curr_proc->pid);
@@ -263,8 +264,8 @@ int main(int argc, char *argv[])
                         printf("Scheduler : Process %d finished\n", curr_proc->pid);
                         finished_process(curr_proc);
                         printpcb(curr_proc, curr_time); //print data in schedular.lod
-                        quanta_counter=1;
-                        curr_proc=NULL;
+                        quanta_counter = 1;
+                        curr_proc = NULL;
                     }
 
                     else if (curr_proc->remaining_time == 1) //about to finish before it's quanta finish
@@ -282,10 +283,10 @@ int main(int argc, char *argv[])
             break;
     }
 
-    generate_output(curr_time,idle_waiting);
+    generate_output(curr_time, idle_waiting);
 
     // after this is terminated -> proc gen will terminate everything
-    destroyClk(true);
+    destroyClk(false);
 }
 
 void clearResources(int signum)
@@ -381,11 +382,11 @@ void pause_process(int pid)
     kill(pid, SIGSTOP);
 }
 
-void generate_output(int curr_time,int idle_waiting)
+void generate_output(int curr_time, int idle_waiting)
 {
     FILE *filePointer = fopen("scheduler.perf", "a+");
-    int  tot_wait = 0;
-    double ulti,tot_wta = 0.0, avg_wait, avg_wta;
+    int tot_wait = 0;
+    double ulti, tot_wta = 0.0, avg_wait, avg_wta;
     struct node *tt = finised_processes->head;
     struct PCB *pp;
     int count = 0;
@@ -400,13 +401,10 @@ void generate_output(int curr_time,int idle_waiting)
 
     double value = (double)((curr_time - idle_waiting) * 100) / curr_time;
     int v = (int)((value * 100) + .5);
-    ulti= v / 100.0;
+    ulti = v / 100.0;
 
-
- 
-
-     value = (double)tot_wta / (count);
-     v = (int)(value * 100 + .5);
+    value = (double)tot_wta / (count);
+    v = (int)(value * 100 + .5);
     avg_wta = v / 100.0;
 
     value = (double)tot_wait / (count);

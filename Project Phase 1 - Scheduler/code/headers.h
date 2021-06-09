@@ -74,5 +74,4 @@ enum Scheduling_Algorithms
     SRTN,
     // 5. Round Robin (RR)
     RR
-}Scheduling_Algorithms;
-
+} Scheduling_Algorithms;

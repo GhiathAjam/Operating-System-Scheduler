@@ -150,7 +150,7 @@ void linked_list_remove(struct linked_list *llist, void *data)
     // previous node as we need to change 'prev->next'
     while (p != NULL && p->data != data)
     {
-        
+
         prev = p;
         p = p->next;
     }
@@ -158,7 +158,6 @@ void linked_list_remove(struct linked_list *llist, void *data)
     // If key was not present in linked list
     if (p == NULL)
         return;
-    
 
     // Unlink the node from linked list
     prev->next = p->next;
@@ -170,7 +169,7 @@ void linked_list_remove(struct linked_list *llist, void *data)
     // }
     // if (!p->next)
     // {
-    //     
+    //
     //     return;
     // }
     // struct node *temp = p->next;
@@ -180,5 +179,5 @@ void linked_list_remove(struct linked_list *llist, void *data)
     // p->next = p->next->next;
     // temp->next = NULL;
     // llist->count--;
-    // 
+    //
 }

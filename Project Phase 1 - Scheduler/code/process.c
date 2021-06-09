@@ -11,12 +11,12 @@ int main(int agrc, char *argv[])
     signal(SIGINT, endprocess);
 
     //kill(getpid(), SIGSTOP); //a process should be paused until the schedulder chooses to run it
-                             //to prevent 2 processes to run together
+    //to prevent 2 processes to run together
 
     initClk();
     remainingtime = atoi(argv[0]);
     //printf("%d", remainingtime);
-     printf("I am process :%d  i will start \n", getpid());
+    printf("I am process :%d  i will start \n", getpid());
     while (remainingtime > 0)
     {
         // busy wait
@@ -24,7 +24,7 @@ int main(int agrc, char *argv[])
         //printf(" i am process %d i am running ...\n",getpid());
     }
 
-     printf("I am process :%d  i will terminte \n", getpid());
+    printf("I am process :%d  i will terminte \n", getpid());
     destroyClk(false);
     return 0;
 }
