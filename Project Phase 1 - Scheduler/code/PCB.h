@@ -23,8 +23,10 @@ typedef struct PCB
     int remaining_time; //shared variable
     int waiting_time;
     int finish_time;
+    int last_stop_time; // to get wait time
+                        // in case of switch
     enum Process_State state;
-}PCB;
+} PCB;
 
 struct PCB *new_pcb(process *p, int pid)
 {
@@ -38,6 +40,7 @@ struct PCB *new_pcb(process *p, int pid)
     pcb->state = -1;
     pcb->waiting_time = 0;
     pcb->finish_time = 0;
+    pcb->last_stop_time = 0;
     return pcb;
 }
 
